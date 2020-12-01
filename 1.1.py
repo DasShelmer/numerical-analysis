@@ -6,10 +6,6 @@ def minOneInPowK(k):
     return -1 if k % 2 else 1
 
 
-def calcF(k, kFact, xInPowK):
-    return minOneInPowK(k) * xInPowK / kFact
-
-
 def calcPoint(eps, x):
     k = 0
     kFact = 1
@@ -22,21 +18,24 @@ def calcPoint(eps, x):
         k += 1
         kFact *= k
         xInPowK *= x
-        val = calcF(k, kFact, xInPowK)
+        val = minOneInPowK(k) * xInPowK / kFact
     return (summ, k)
 
 
 e = 0.1
-h = .1
-a = -2
-b = 30
+n = 10
+a = 0
+b = 5
+h = (b - a)/n
 
 xArr = [i for i in numpy.arange(a, b, h)]
 resArr = list(zip(*[calcPoint(e, i) for i in xArr]))
 yArr = list(resArr[0])
 kArr = list(resArr[1])
 
+print(xArr)
+print(yArr)
+
 plt.grid()
 plt.plot(xArr, yArr)
-plt.plot(xArr, kArr)
 plt.show()
