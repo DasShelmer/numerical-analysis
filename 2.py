@@ -32,22 +32,32 @@ def f_diff(x):
     return -sin(2*x)
 
 
+def d(func, i, h, a, b):
+    x = i*h
+    if x == a:
+        return (func(x+h)-func(x))/h
+    elif x == b:
+        return (func(x)-func(x-h))/h
+    else:
+        return (func(x+h)-func(x-h))/(2*h)
+
+
 def diff(func: Callable, a, b, n):
     h = (b-a) / (n-1)
-    return [(func(h*i+h)-func(h*i-h))/(2*h) for i in range(n)]
+    return [d(func, i, h, a, b) for i in range(n)]
 
 
 def run():
-    n = 30
+    n = 20
     a = -1
     b = 6
     xArray = linspace(a, b, n)
     difArray = diff(f, a, b, n)
     trueDifArray = [f_diff(x) for x in xArray]
-    deltaArray = [d-td for td, d in zip(trueDifArray, difArray)]
+    deltaArray = [abs(d-td) for td, d in zip(trueDifArray, difArray)]
 
     show_table(xArray, trueDifArray, difArray, deltaArray)
-    show_graph(xArray, trueDifArray, difArray)
+    #show_graph(xArray, trueDifArray, difArray)
 
 
 run()
