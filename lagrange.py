@@ -30,29 +30,27 @@ def lagrange(x, xArr, yArr, plots):
         return polynom
     summ = 0
     for j in range(k):
-        if len(plots) <= j:
-            plots.append([])
-        else:
-            plots[j].append(calc_basis(j, x))
+        if not j in plots:
+            plots[j] = [calc_basis(j, xi) * yArr[j] for xi in linspace(-10, 10, 512)]
         summ += calc_basis(j, x) * yArr[j]
     return summ
 
 
 def run():
-    a = -100
-    b = 100
-    n = 20
-    al = a /2
-    bl = b/2
-    nl = 4
-    f = lambda x: x**4
+    a = 0
+    b = 3
+    n = 15
+    al = a
+    bl = b
+    nl = 10
+    f = lambda x: x**9
     xCalculated = linspace(a, b, n)
     yCalculated = [f(x) for x in xCalculated]
 
     xForLagrange = linspace(al, bl, nl)
     yForLagrange = [f(x) for x in xForLagrange]
 
-    plots = []
+    plots = {}
     # Считаем и промежуточные и известные узлы
     xLagrange = linspace(a, b, n)
     yLagrange = [lagrange(x, xForLagrange, yForLagrange, plots) for x in xLagrange]
@@ -61,12 +59,12 @@ def run():
     minDelta = min(yDelta)
     avrDelta = sum(yDelta) / len(yDelta)
 
-    for p in plots:
+    for p in plots.values():
         while len(p) < len(xLagrange):
             p.append(p[-1])
-        plt.plot(xLagrange, p)
-    #show_table(xCalculated, yCalculated, yLagrange, yDelta)
-    plt.plot(xCalculated, yCalculated, color='blue')
+        plt.plot(linspace(-10, 10, 512), p)
+    show_table(xCalculated[:10], yCalculated[:10], yLagrange[:10], yDelta[:10])
+    plt.plot(xCalculated, yCalculated, 'ro', color='blue')
     plt.plot(xLagrange, yLagrange, color='red')
     print({'maxD': maxDelta, 'minD': minDelta, 'avrD':avrDelta})
     plt.show()

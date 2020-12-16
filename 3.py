@@ -2,10 +2,18 @@ from math import sin
 
 
 def f(x) -> float:
-    return sin(x)* x**3 / 2**x
+    return x**2
 
 
-def integral(a, b, n):
+def integralTrapezoidal(a, b, n):
+    h = (b - a) / n  # отрезок будет [a,b-h]
+    summ = h * (f(a) + f(b)) / 2.0
+    for i in range(n):
+        summ += h * f(a + h * i)
+    return summ
+
+
+def integralSimpson(a, b, n):
     h = (b - a) / n  # отрезок будет [a,b-h]
     summ = 0.
     for i in range(n):
@@ -15,14 +23,24 @@ def integral(a, b, n):
     return summ
 
 
-def runge(a, b, n, e=1e-3):
-    eps = e / 15  # точность для I Симпсона 1/15
-    first = integral(a, b, n)
-    second = integral(a, b, 2 * n)
-    while abs(first - second) / 15 >= eps:
+def runge(fn, a, b, n, e):
+    first = fn(a, b, n)
+    second = fn(a, b, 2 * n)
+    if abs(first - second) >= e:
+        n *= 2
+    while abs(first - second) >= e:
         n *= 2
         first = second
-        second = integral(a, b, n)
+        second = fn(a, b, n)
     return second, n
 
-print(runge(0., 10., 1000))
+
+def run():
+    a = 0.
+    b = 1.
+    n = 1
+    e = 1e-3
+    print(runge(integralTrapezoidal, a, b, n, e * 3))
+    print(runge(integralSimpson, a, b, n, e * 15))
+
+run()
