@@ -103,4 +103,5 @@ def main():
     print('Верный ли ответ:', is_correct)
 
 
-main()
+if __name__ == "__main__":
+    main()
