@@ -1,20 +1,51 @@
-from copy import deepcopy
-
 from numpy import abs, arctan, cos, sin, sqrt
 
 SQRT2 = sqrt(2)
 
 
+def make_symmetrical(A, by_upper=True):
+    """
+    Делает матрицу симметричной на снове
+    копирования эл-тов выше/ниже диагонали
+    в соответствующие эл-ты ниже/выше диагонали
+    """
+    for i in range(len(A)):
+        if by_upper:
+            for j in range(0, i):
+                A[i][j] = A[j][i]
+        else:
+            for j in range(i+1, len(A)):
+                A[j][i] = A[i][j]
+
+
+def is_symmetrical(A):
+    """
+    Проверяет является ли матрица симметричной
+    относительно главной диагонали
+    """
+    for i in range(len(A)):
+        for j in range(0, i):
+            if A[i][j] != A[j][i]:
+                return False
+    return True
+
+
 def init_matrix(size, fill=0):
-    return [[fill for col in range(size)] for row in range(size)]
+    """Создание матрицы с заполнением всех эл-ов"""
+    return [[fill for _ in range(size)] for _ in range(size)]
 
 
-def print_matrix(matrix):
+def print_matrix(matrix, adv_text=None):
+    """Вывод матрицы"""
+    if adv_text:
+        print(adv_text)
+
     for row in matrix:
         print(f"|{' '.join([str(a) for a in row])}|")
 
 
 def max_element(matrix):
+    """Нахождение индексов максимального эл-та матрицы"""
     max = -1
     maxI, maxJ = 0, 0
     for (row, i) in zip(matrix, range(len(matrix))):
@@ -29,17 +60,20 @@ def max_element(matrix):
     return (maxI, maxJ)
 
 
-def mul_Tmat(AT, B):
+def t_mul_mat(AT, B):
+    """Перемножение матриц, где первая транспонируется (A^T x B)"""
     N = len(AT)
     res = init_matrix(N)
     for i in range(N):
         for j in range(N):
             for k in range(N):
+                # Транспонирование заключается в смене пары индексов AT[i][k] на AT[k][i]
                 res[i][j] += AT[k][i] * B[k][j]
     return res
 
 
 def mul_mat(A, B):
+    """Перемножение матриц (A x B)"""
     N = len(A)
     res = init_matrix(N)
     for i in range(N):
@@ -50,11 +84,14 @@ def mul_mat(A, B):
 
 
 def calc_rot_matrix(matrix, maxI, maxJ):
+    """Построение матрицы поворота"""
     N = len(matrix)
     rot_mat = init_matrix(N)
+    # Создание единичной матрицы
     for i in range(N):
         rot_mat[i][i] = 1
 
+    # Частный случай, где fi = pi/4
     if matrix[maxI][maxI] == matrix[maxJ][maxJ]:
         rot_mat[maxI][maxI] = rot_mat[maxJ][maxJ] = rot_mat[maxJ][maxI] = SQRT2 / 2
         rot_mat[maxI][maxJ] = -SQRT2 / 2
@@ -69,6 +106,7 @@ def calc_rot_matrix(matrix, maxI, maxJ):
 
 
 def fault(matrix):
+    """Вычисление погрешности"""
     sum = 0.0
     for (row, i) in zip(matrix, range(len(matrix))):
         # Выбор эл-ов строго выше диагонали
@@ -77,39 +115,60 @@ def fault(matrix):
     return sqrt(2 * sum)
 
 
-def jacobi_run(matrix, eps):
+def jacobi(matrix, precision):
+    """
+    Метод вращения Якоби для нахождения
+    собственных значений матрицы и
+    собственных векторов с заданной точностью
+    """
+
     N = len(matrix)
+
+    # Кол-во итераций (вращений)
     iteration = 0
 
-    matrix = deepcopy(matrix)
+    # Полное копирование исходной матрицы
+    matrix = [[a for a in row] for row in matrix]
 
+    # Расчёт текущей погрешности
     cur_fault = fault(matrix)
 
+    # Матрица с помощью кот. осуществляем поворот
     rot_matrix = list()
 
+    # Матрица, где столбцы - это собственные векторы
     solution = init_matrix(N)
     for i in range(N):
         solution[i][i] = 1
 
-    while cur_fault > eps:
+    # Выполняем пока погрешность не будет приемлимой
+    while cur_fault > precision:
         maxI, maxJ = max_element(matrix)
         rot_matrix = calc_rot_matrix(matrix, maxI, maxJ)
 
-        temp = mul_Tmat(rot_matrix, matrix)
+        # Первая фаза поворота
+        temp = t_mul_mat(rot_matrix, matrix)
+        # Вторая фаза поворота
         matrix = mul_mat(temp, rot_matrix)
-        cur_fault = fault(matrix)
 
+        # Обновляем собственные векторы на основе матрицы поворота
         solution = mul_mat(solution, rot_matrix)
 
+        # Расчёт текущей погрешности
+        cur_fault = fault(matrix)
         iteration += 1
 
+    # Собираем с.з. из диагонали матрицы в вектор
     eigenvalues = [matrix[i][i] for i in range(N)]
+    # Транспонируем с.в. (т.к. они записаны столбцами их неудобно обрабатывать дальше)
     eigenvectors = [[solution[j][i] for j in range(
         len(solution))] for i in range(len(solution[0]))]
+
     return (eigenvalues, eigenvectors, iteration, cur_fault)
 
 
 def main():
+
     matrix = [
         [-2.612, 3.268, -4.505, -9.948, -2.137, 3.715, 0.498],
         [3.268, 9.208, -3.865, -8.143, -4.874, -2.64, -8.333],
@@ -122,14 +181,17 @@ def main():
 
     precision = 1e-4
 
-    eigenvalues, eigenvectors, steps, fault = jacobi_run(matrix, precision)
+    eigenvalues, eigenvectors, steps, fault = jacobi(matrix, precision)
 
     print('Решение:')
+
     for (eigenvector, i) in zip(eigenvectors, range(len(eigenvectors))):
         print(f"Собственный вектор k{i+1}")
         print(eigenvector)
+
     print('Собственные значения:')
     print(eigenvalues)
+
     print(f"Подсчитано за {steps} шагов")
     print(f"С точностью {fault}")
 
