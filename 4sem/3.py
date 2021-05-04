@@ -1,7 +1,13 @@
-from numpy import abs, arctan, cos, sin, sqrt
+from random import randint
+
+from numpy import abs, arctan, cos, mat, sin, sqrt
 
 SQRT2 = sqrt(2)
 
+# Вспомогательные функции
+def r():
+    """Генерирует случайное число [-10.000; 10.000]"""
+    return randint(-10000, 10000) / 1000
 
 def make_symmetrical(A, by_upper=True):
     """
@@ -17,7 +23,6 @@ def make_symmetrical(A, by_upper=True):
             for j in range(i+1, len(A)):
                 A[j][i] = A[i][j]
 
-
 def is_symmetrical(A):
     """
     Проверяет является ли матрица симметричной
@@ -29,11 +34,12 @@ def is_symmetrical(A):
                 return False
     return True
 
-
-def init_matrix(size, fill=0):
-    """Создание матрицы с заполнением всех эл-ов"""
-    return [[fill for _ in range(size)] for _ in range(size)]
-
+def random_matrix(size=7, symmetrical=True):
+    """Генерирует матрицу со случайными эл-ми"""
+    mat = [[r() for _ in range(size)] for _ in range(size)]
+    if symmetrical:
+        make_symmetrical(mat)
+    return mat
 
 def print_matrix(matrix, adv_text=None):
     """Вывод матрицы"""
@@ -42,6 +48,12 @@ def print_matrix(matrix, adv_text=None):
 
     for row in matrix:
         print(f"|{' '.join([str(a) for a in row])}|")
+# Конец вспомогательных функций
+
+
+def init_matrix(size, fill=0):
+    """Создание матрицы с заполнением всех эл-ов"""
+    return [[fill for _ in range(size)] for _ in range(size)]
 
 
 def max_element(matrix):
