@@ -1,13 +1,16 @@
 from random import randint
 
-from numpy import abs, arctan, cos, mat, sin, sqrt
+from numpy import abs, arctan, cos, dot, mat, sin, sqrt
 
 SQRT2 = sqrt(2)
 
 # Вспомогательные функции
+
+
 def r():
     """Генерирует случайное число [-10.000; 10.000]"""
     return randint(-10000, 10000) / 1000
+
 
 def make_symmetrical(A, by_upper=True):
     """
@@ -23,6 +26,7 @@ def make_symmetrical(A, by_upper=True):
             for j in range(i+1, len(A)):
                 A[j][i] = A[i][j]
 
+
 def is_symmetrical(A):
     """
     Проверяет является ли матрица симметричной
@@ -34,12 +38,14 @@ def is_symmetrical(A):
                 return False
     return True
 
+
 def random_matrix(size=7, symmetrical=True):
     """Генерирует матрицу со случайными эл-ми"""
     mat = [[r() for _ in range(size)] for _ in range(size)]
     if symmetrical:
         make_symmetrical(mat)
     return mat
+
 
 def print_matrix(matrix, adv_text=None):
     """Вывод матрицы"""
@@ -86,11 +92,10 @@ def t_mul_mat(AT, B):
 
 def mul_mat(A, B):
     """Перемножение матриц (A x B)"""
-    N = len(A)
-    res = init_matrix(N)
-    for i in range(N):
-        for j in range(N):
-            for k in range(N):
+    res = [[0 for _ in range(len(B[0]))] for _ in range(len(A))]
+    for i in range(len(A)):
+        for j in range(len(B[0])):
+            for k in range(len(B)):
                 res[i][j] += A[i][k] * B[k][j]
     return res
 
@@ -179,6 +184,29 @@ def jacobi(matrix, precision):
     return (eigenvalues, eigenvectors, iteration, cur_fault)
 
 
+def mul_mat_vect(A, V):
+    res = [0]*len(A[0])
+
+    for i in range(len(A[0])):
+        for j in range(len(V)):
+            res[i] += V[j] * A[j][i]
+
+    return res
+
+
+def vect_dif(A, B):
+    return [x-y for (x, y) in zip(A, B)]
+
+
+def is_answer(A, eigenvalues, eigenvectors):
+    # A x v - λ x v
+    for (vector, value) in zip(eigenvectors, eigenvalues):
+        AV = mul_mat_vect(A, vector)
+        lambdaV = [value * x for x in vector]
+        diff = vect_dif(AV, lambdaV)
+        print(diff)
+
+
 def main():
 
     matrix = [
@@ -206,6 +234,7 @@ def main():
 
     print(f"Подсчитано за {steps} шагов")
     print(f"С точностью {fault}")
+    is_answer(matrix, eigenvalues, eigenvectors)
 
 
 if __name__ == "__main__":
